@@ -161,6 +161,27 @@ namespace scenario::gazebo::utils {
                                      const bool useCache = false);
 
     /**
+     * Get URIs to all models from a collection. The collection is now
+     * downloaded.
+     */
+    std::vector<std::string>
+    getFuelCollectionModelURIs(const std::string& collection_uri);
+
+    /**
+     * Get file paths to all models from a collection. This collection is
+     * downloaded if not present in local cache.
+     */
+    std::vector<std::string>
+    getFuelCollectionModelPaths(const std::string& collection_uri);
+
+    /**
+     * Get file paths to all models in local cache belonging to owner and/or
+     * matching the name.
+     */
+    std::vector<std::string> getLocalCacheModelPaths(const std::string& owner,
+                                                     const std::string& name);
+
+    /**
      * Generate a random alpha numeric string.
      *
      * @param length The length of the string.

@@ -34,8 +34,12 @@
 #include <ignition/common/SystemPaths.hh>
 #include <ignition/common/URI.hh>
 #include <ignition/fuel_tools/ClientConfig.hh>
+#include <ignition/fuel_tools/CollectionIdentifier.hh>
 #include <ignition/fuel_tools/FuelClient.hh>
 #include <ignition/fuel_tools/Interface.hh>
+#include <ignition/fuel_tools/LocalCache.hh>
+#include <ignition/fuel_tools/ModelIdentifier.hh>
+#include <ignition/fuel_tools/ModelIter.hh>
 #include <ignition/fuel_tools/Result.hh>
 #include <ignition/gazebo/config.hh>
 #include <sdf/Element.hh>
@@ -231,6 +235,90 @@ std::string utils::getModelFileFromFuel(const std::string& URI,
     }
 
     return modelFile;
+}
+
+std::vector<std::string>
+utils::getFuelCollectionModelURIs(const std::string& collection_uri)
+{
+    std::vector<std::string> model_uris;
+
+    ignition::common::URI url(collection_uri);
+
+    ignition::fuel_tools::ClientConfig conf;
+    ignition::fuel_tools::FuelClient client(conf);
+    ignition::fuel_tools::CollectionIdentifier collection;
+
+    if (!client.ParseCollectionUrl(ignition::common::URI(collection_uri),
+                                   collection)) {
+        return model_uris;
+    }
+
+    auto model_iter = client.Models(collection);
+
+    for (; model_iter; ++model_iter) {
+        model_uris.push_back(model_iter->Identification().UniqueName());
+    }
+
+    return model_uris;
+}
+
+std::vector<std::string>
+utils::getFuelCollectionModelPaths(const std::string& collection_uri)
+{
+    std::vector<std::string> model_files;
+
+    ignition::common::URI url(collection_uri);
+
+    ignition::fuel_tools::ClientConfig conf;
+    ignition::fuel_tools::FuelClient client(conf);
+    ignition::fuel_tools::CollectionIdentifier collection;
+
+    if (!client.ParseCollectionUrl(ignition::common::URI(collection_uri),
+                                   collection)) {
+        return model_files;
+    }
+
+    auto model_iter = client.Models(collection);
+
+    for (; model_iter; ++model_iter) {
+        client.DownloadModel(model_iter->Identification());
+        model_files.push_back(model_iter->PathToModel());
+    }
+
+    return model_files;
+}
+
+std::vector<std::string>
+utils::getLocalCacheModelPaths(const std::string& owner = "",
+                               const std::string& name = "")
+{
+    std::vector<std::string> model_files;
+
+    ignition::fuel_tools::ClientConfig conf;
+    ignition::fuel_tools::LocalCache local_cache(&conf);
+    ignition::fuel_tools::ModelIdentifier filter;
+
+    if (!owner.empty()) {
+        filter.SetOwner(owner);
+    }
+    if (!name.empty()) {
+        filter.SetName(name);
+    }
+
+    if (!owner.empty() || !name.empty()) {
+        auto model_iter = local_cache.MatchingModels(filter);
+        for (; (model_iter); ++(model_iter)) {
+            model_files.push_back((model_iter)->PathToModel());
+        }
+    }
+    else {
+        auto model_iter = local_cache.AllModels();
+        for (; (model_iter); ++(model_iter)) {
+            model_files.push_back((model_iter)->PathToModel());
+        }
+    }
+
+    return model_files;
 }
 
 std::string utils::getRandomString(const size_t length)
