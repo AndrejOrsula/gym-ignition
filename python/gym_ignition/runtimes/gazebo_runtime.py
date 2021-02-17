@@ -246,15 +246,6 @@ class GazeboRuntime(runtime.Runtime):
         assert self._world_sdf is not None
         assert self._world_name in self._gazebo.world_names()
 
-        if self._world_sdf == "":
-
-            # Insert the ground plane
-            ok_ground = world.insert_model(
-                gym_ignition_models.get_model_file("ground_plane"))
-
-            if not ok_ground:
-                raise RuntimeError("Failed to insert the ground plane")
-
         # Set the world in the task
         self.task.world = world
 
