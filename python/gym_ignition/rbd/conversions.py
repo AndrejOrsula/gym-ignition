@@ -1,6 +1,6 @@
 import abc
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Union
 from scipy.spatial.transform import Rotation
 
 
@@ -57,7 +57,10 @@ class Transform(abc.ABC):
 class Quaternion(abc.ABC):
 
     @staticmethod
-    def to_wxyz(xyzw: np.ndarray) -> np.ndarray:
+    def to_wxyz(xyzw: Union[np.ndarray, Tuple[float, float, float, float]]) -> np.ndarray:
+
+        if isinstance(xyzw, tuple):
+            return xyzw[3], xyzw[0], xyzw[1], xyzw[2]
 
         if xyzw.shape != (4,):
             raise ValueError(xyzw)
@@ -65,7 +68,10 @@ class Quaternion(abc.ABC):
         return xyzw[[3, 0, 1, 2]]
 
     @staticmethod
-    def to_xyzw(wxyz: np.ndarray) -> np.ndarray:
+    def to_xyzw(wxyz: Union[np.ndarray, Tuple[float, float, float, float]]) -> np.ndarray:
+
+        if isinstance(wxyz, tuple):
+            return wxyz[1], wxyz[2], wxyz[3], wxyz[0]
 
         if wxyz.shape != (4,):
             raise ValueError(wxyz)
